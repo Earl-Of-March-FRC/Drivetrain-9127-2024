@@ -19,21 +19,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   private final WPI_VictorSPX frontLeft = new WPI_VictorSPX(2);
-  private final WPI_VictorSPX frontRight = new WPI_VictorSPX(3);
-  private final WPI_VictorSPX backLeft = new WPI_VictorSPX(0);
+  private final WPI_VictorSPX frontRight = new WPI_VictorSPX(0);
+  private final WPI_VictorSPX backLeft = new WPI_VictorSPX(3);
   private final WPI_VictorSPX backRight = new WPI_VictorSPX(1);
 
   private final DifferentialDrive drive = new DifferentialDrive(frontLeft, frontRight);
 
   XboxController controller = new XboxController(0);
 
-  private final double speed = 0.7;
+  // make speed negative
+  private final double speed = 1;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -41,8 +40,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
     frontLeft.setInverted(true);
@@ -87,15 +84,6 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
-        break;
-      case kDefaultAuto:
-      default:
-        // Put default auto code here
-        break;
-    }
   }
 
   /** This function is called once when teleop is enabled. */
@@ -105,8 +93,13 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    double lSpeed = controller.getRawAxis(1) * speed;
-    double rSpeed = controller.getRawAxis(5) * speed;
+    double leftJoystickValue = controller.getRawAxis(1);
+    double rightJoystickValue = controller.getRawAxis(5);
+
+    // Relation between joystick value and motor speed is a square root function
+    double lSpeed = Math.signum(leftJoystickValue)*(Math.sqrt(Math.abs(leftJoystickValue))) * speed;
+    double rSpeed = Math.signum(rightJoystickValue)*(Math.sqrt(Math.abs(rightJoystickValue))) * speed;
+
     //double lSpeed = controller.getRawAxis(1) * controller.getRawAxis(1) * (controller.getRawAxis(1) > 0 ? 1 :-1);
     //double rSpeed = controller.getRawAxis(5) * controller.getRawAxis(5) * (controller.getRawAxis(5) > 0 ? 1 : -1);
 
